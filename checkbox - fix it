@@ -1,1 +1,96 @@
+<script>
+     // Variables to store checked case records and case reports
+     let checkedCaseRecord = null;
+     let checkedCaseReports = [];
 
+     function updateCheckedLists() {
+         // Get checked case record and case reports
+         checkedCaseRecord = document.querySelector('.caseRecord:checked')?.dataset.caseId || null;
+         checkedCaseReports = Array.from(document.querySelectorAll('.caseReport:checked')).map(report => report.dataset.caseReport);
+
+         // Enable the appropriate button based on selections
+         const moveButton = document.getElementById('moveButton');
+         const createButton = document.getElementById('createButton');
+
+         if (checkedCaseRecord) {
+             moveButton.disabled = false;
+             createButton.disabled = true;
+         } else if (checkedCaseReports.length > 0) {
+             createButton.disabled = false;
+             moveButton.disabled = true;
+         } else {
+             moveButton.disabled = true;
+             createButton.disabled = true;
+         }
+
+         // Debugging output to see the values in the console
+         console.log("Checked Case Record:", checkedCaseRecord);
+         console.log("Checked Case Reports:", checkedCaseReports);
+     }
+
+     function handleRecordClick(recordCheckbox) {
+         const caseId = recordCheckbox.dataset.caseId;
+         const allRecords = document.querySelectorAll('.caseRecord');
+         const associatedReports = document.querySelectorAll(`.caseReport[data-case-id="${caseId}"]`);
+
+         if (recordCheckbox.checked) {
+             // If this case record is checked, uncheck and disable all other case records
+             allRecords.forEach(record => {
+                 if (record !== recordCheckbox) {
+                     record.checked = false;
+                     record.disabled = true;
+                 }
+             });
+
+             // Disable associated case reports
+             associatedReports.forEach(report => {
+                 report.checked = false;
+                 report.disabled = true;
+             });
+         } else {
+             // Only enable other case records if all associated case reports are unchecked
+             const anyCheckedReports = Array.from(associatedReports).some(report => report.checked);
+
+             if (!anyCheckedReports) {
+                 // No associated case reports are checked, so enable all case records
+                 allRecords.forEach(record => record.disabled = false);
+             } else {
+                 // Keep other case records disabled if any associated reports are checked
+                 allRecords.forEach(record => {
+                     if (record !== recordCheckbox) {
+                         record.disabled = true;
+                     }
+                 });
+             }
+
+             // Enable associated case reports since the case record was unchecked
+             associatedReports.forEach(report => report.disabled = false);
+         }
+
+         // Update button states after any change
+         updateCheckedLists();
+     }
+
+     function handleReportClick(reportCheckbox) {
+         const caseId = reportCheckbox.dataset.caseId;
+         const associatedRecord = document.querySelector(`.caseRecord[data-case-id="${caseId}"]`);
+         const associatedReports = document.querySelectorAll(`.caseReport[data-case-id="${caseId}"]`);
+
+         if (reportCheckbox.checked) {
+             // Disable the associated case record when any case report is selected
+             associatedRecord.disabled = true;
+         } else {
+             // Check if any other associated reports are still checked
+             const anyCheckedReports = Array.from(associatedReports).some(report => report.checked);
+
+             if (!anyCheckedReports) {
+                 // Enable the associated case record if no other reports are checked
+                 associatedRecord.disabled = false;
+             }
+         }
+
+         // Update button states after any change
+         updateCheckedLists();
+     }
+
+ </script>
